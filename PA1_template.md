@@ -1,31 +1,51 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
-```{r load packages}
+
+```r
 library(dplyr)
+```
+
+```
+## 
+## Attaching package: 'dplyr'
+## 
+## The following object is masked from 'package:stats':
+## 
+##     filter
+## 
+## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union
+```
+
+```r
 library(knitr)
 ```
 
-```{r setoptions,echo=TRUE}
+
+```r
 opts_chunk$set(echo=TRUE,results="hide")
 ```
 
 ## Loading and preprocessing the data
 
-```{r read data}
+
+```r
 data <- read.csv("activity.csv")
 dataclean <- na.omit(data)
 ```
 
 ## What is mean total number of steps taken per day?
 
-```{r stats}
+
+```r
 dailysteps <- tapply(dataclean$steps, dataclean$date,sum)
 hist(dailysteps,breaks=10,main="Histogram of Daily Steps",xlab="Daily Steps",ylab="Frequency")
+```
+
+![](PA1_template_files/figure-html/stats-1.png) 
+
+```r
 mean(dailysteps,na.rm=TRUE)
 median(dailysteps,na.rm=TRUE)
 ```
@@ -34,13 +54,17 @@ The daily steps average is 10766.19. The median is close at 10765.
 
 ## What is the average daily activity pattern?
 
-```{r daily plot}
+
+```r
 dataclean$interval <- as.factor(dataclean$interval)
 int_avg <- tapply(dataclean$steps,dataclean$interval,mean)
-plot(unique(as.numeric(dataclean$interval)),int_avg,type="l",main="Average Daily Activity in Steps",xlab="Interval",ylab="Number of Steps")
+plot(unique(as.numeric(dataclean$interval)),int_avg,type="l",main="Average Daily Activity in Steps",xlab="Interval",ylab="Steps")
 ```
 
-```{r max interval}
+![](PA1_template_files/figure-html/daily plot-1.png) 
+
+
+```r
 ## I sort the values and then grab the final header name.
 ## Not a very elegant way of doing this, I admit.
 as.numeric(names(sort(int_avg)[length(int_avg)]))
@@ -50,17 +74,24 @@ as.numeric(names(sort(int_avg)[length(int_avg)]))
 
 ## Inputting missing values
 
-```{r missing values}
+
+```r
 nrow(data) - nrow(dataclean)
 ```
 
 There are 2304 missing values.
 
-```{r data transformed}
+
+```r
 newdata <- data
 newdata$steps[is.na(newdata$steps)] <- mean(dataclean$steps)
 dailysteps2 <- tapply(newdata$steps, newdata$date,sum)
 hist(dailysteps2,breaks=10,main="Edited Histogram of Daily Steps",xlab="Daily Steps",ylab="Frequency")
+```
+
+![](PA1_template_files/figure-html/data transformed-1.png) 
+
+```r
 mean(dailysteps2,na.rm=TRUE)
 median(dailysteps2,na.rm=TRUE)
 ```
@@ -69,7 +100,8 @@ Since I did the easiest (and probably not accurate) substitution imaginable, the
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
-```{r days factoring}
+
+```r
 newdata$date <- as.POSIXlt(newdata$date)
 newdata$weekdays <- weekdays(newdata$date,abbreviate=T)
 
@@ -78,7 +110,8 @@ newdata$weekdays[newdata$weekdays %in% c("Mon", "Tue","Wed","Thu","Fri")]<-"week
 newdata$weekdays <- as.factor(newdata$weekdays)
 ```
 
-```{r filtering and merging}
+
+```r
 newdata$date <- as.character(newdata$date)
 
 weekend <- filter(newdata,newdata$weekdays=="weekend")
@@ -97,5 +130,7 @@ library(ggplot2)
 merged$interval <- as.factor(merged$interval)
 qplot(as.numeric(interval),steps,data=merged,facets=weekday~.,geom="line",xlab="Interval",ylab="Number of steps")
 ```
+
+![](PA1_template_files/figure-html/filtering and merging-1.png) 
 
 It seems -- unsurprisingly -- that there is more walking activity on the weekend. That makes sense.
